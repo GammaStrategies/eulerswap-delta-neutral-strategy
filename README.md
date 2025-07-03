@@ -76,7 +76,9 @@ The **backtesting script** (backtest.py) uses a **tailored dataset** (swaps.csv)
 The strategy parameters are written on backtest.py and were defined using a proprietary optimizer.
 
 ### 📈 Charts
-![Alt text](./images/my-diagram.png)
+![](./value.png)
+![](./delta.png)
+![](./health.png)
 
 ### 📊 Summary
 

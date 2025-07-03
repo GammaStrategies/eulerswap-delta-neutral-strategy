@@ -76,9 +76,15 @@ Backtesting this proxy strategy allows us to indirectly and approximately backte
 The strategy parameters are written on backtest.py and were defined using a proprietary optimizer.
 
 ### 📈 Charts
-![](./value.png)
-![](./delta.png)
-![](./health.png)
+
+**Small sample**
+![](./delta_small.png)
+![](./positions_small.png)
+
+**Full sample**
+![](./value_full.png)
+![](./delta_full.png)
+![](./health_full.png)
 
 ### 📊 Summary
 

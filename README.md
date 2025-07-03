@@ -8,7 +8,7 @@ This strategy is designed for **EulerSwap**, a novel AMM protocol that integrate
 
 - The market-maker **wants exposure to token Y only** (typically a stablecoin like USDC, USDT, DAI, etc.)
 - They **lend token Y** on Euler (earning interest) and **borrow token X** (a volatile asset like ETH, BTC, UNI, etc.)
-- Both tokens are used to deploy a **custom individual liquidity curve** on EulerSwap
+- Both tokens are used to install a **liquidity curve** on EulerSwap
 
 At initialization, the delta in token X is neutral:
 
@@ -56,9 +56,9 @@ Since Uniswap v3 is fundamentaly different than EulerSwap, the following **equiv
 | Maximum concentration / minimum slippage       | Concentration = 1   | Single-range position       |
 | Minimum concentration / maximum slippage       | Concentration = 0     | Full-range position       |
 
-Backtesting this proxy strategy allows us to indirectly and approximately backtest the target strategy.
-
 The **backtesting script** (backtest.py) uses a **tailored dataset** (swaps.csv) containing the historical swap data of a given pool, including the liquidity in the current range at each swap. These datasets are generated using proprietary data and script.
+
+Backtesting this proxy strategy allows us to indirectly and approximately backtest the target strategy.
 
 ## 3. Results
 

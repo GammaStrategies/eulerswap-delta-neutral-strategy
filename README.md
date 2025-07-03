@@ -1,4 +1,4 @@
-# Backtest of a delta-neutral market-making strategy executable on EulerSwap
+# Backtest of a delta-neutral market-making strategy
 
 ## 1. Target strategy on EulerSwap
 
@@ -6,9 +6,9 @@ This strategy is designed for **EulerSwap**, a novel AMM protocol that integrate
 
 ### 🧩 Core mechanism
 
-- The market-maker **wants exposure to token Y only** (typically a stablecoin like USDC, USDT, DAI, etc.).
-- They **lend token Y** on Euler (earning interest) and **borrow token X** (a volatile asset like ETH, BTC, UNI, etc.).
-- Both tokens are used to deploy a **custom individual liquidity curve** on EulerSwap.
+- The market-maker **wants exposure to token Y only** (typically a stablecoin like USDC, USDT, DAI, etc.)
+- They **lend token Y** on Euler (earning interest) and **borrow token X** (a volatile asset like ETH, BTC, UNI, etc.)
+- Both tokens are used to deploy a **custom individual liquidity curve** on EulerSwap
 
 At initialization, the delta in token X is neutral:
 
@@ -19,7 +19,7 @@ At initialization, the delta in token X is neutral:
 
 As swaps are routed to the curve, the delta (normalized by liabilities) can get away from 0. When this distance exceeds a threshold, the **neutralization mode** is activated:
 
-- The current curve is **uninstalled**.
+- The current curve is **uninstalled**
 - A new curve is installed with:
   - Equilibrium price reset to current market price
   - **Asymmetric extreme concentrations**:
@@ -43,28 +43,26 @@ EulerSwap is still in its early stages, so historical data on volume and liquidi
 - 🧠 **Proprietary routing logic**  
 Every market maker sets its own curve. The router decides which curve to swap against based on slippage, which is quite hard to simulate even with access to the router’s internal logic.
 
-### 🛠️ Solution: equivalent strategy on Uniswap v3
+To validate the strategy, we created a **proxy version on Uniswap v3** that replicates its logic, and is **more easily backtestable** thanks to Uniswap v3's historical data and mutual pool liquidity structure.
 
-To validate the strategy, we built a **proxy version on Uniswap v3** that mimics the logic of the target strategy:
+Since Uniswap v3 is fundamentaly different than EulerSwap, the following **equivalences** were considered:
 
-- Liquidity is split into:
-  - A **base position**, range-bound around the market
-  - A **limit position**, created with leftover tokens after minting the base
+|Element | EulerSwap           | Uniswap v3        |
+|------------------|------------------|--------------|
+| Liquidity structure | Individual curve           | Mutual pool       |
+| Liquidity form       | Curve       | Positions (plural because there is one for leftovers)   |
+| Add liquidity       | Install the curve | Mint positions    |
+| Remove liquidity       | Uninstall the curve | Burn positions     |
+| Maximum concentration / minimum slippage       | Concentration = 1   | Single-range position       |
+| Minimum concentration / maximum slippage       | Concentration = 0     | Full-range position       |
 
-- The strategy rebalances when:
-  - The market price exits a defined range  
-  - The normalized delta exceeds a threshold
+Backtesting this proxy strategy allows us to indirectly and approximately backtest the target strategy.
 
-- Lending and borrowing are simulated off-chain with compounding APYs.
-
-#### 🧪 Dataset
-
-The backtesting script (backtest.py) uses a tailored dataset (swaps.csv) containing the historical swap data of a given pool, including the liquidity in the current range at each swap.  
-> ⚠️ These datasets are generated using proprietary data and script not disclosed in this repository.
+The **backtesting script** (backtest.py) uses a **tailored dataset** (swaps.csv) containing the historical swap data of a given pool, including the liquidity in the current range at each swap. These datasets are generated using proprietary data and script.
 
 ## 3. Results
 
-### 💧 Pool details
+### 💧 Pool
 
 - **Network**: Polygon  
 - **Address**: 0x4ccd010148379ea531d6c587cfdd60180196f9b1
@@ -73,12 +71,14 @@ The backtesting script (backtest.py) uses a tailored dataset (swaps.csv) contain
 - **Fee**: 0.3%
 - **Spacing**: 60
 
-### ⚙️ Strategy parameters
+### ⚙️ Parameters
 
-- Bounds and thresholds were selected using a proprietary optimizer.
-- Parameters were fixed over the entire backtest window.
+The strategy parameters are written on backtest.py and were defined using a proprietary optimizer.
 
-### 📊 Performance summary
+### 📈 Charts
+![Alt text](./images/my-diagram.png)
+
+### 📊 Summary
 
 | Metric           | Value        |
 |------------------|--------------|
@@ -90,25 +90,18 @@ The backtesting script (backtest.py) uses a tailored dataset (swaps.csv) contain
 
 These results demonstrate strong and stable fee capture, with robust risk-adjusted performance under volatile market conditions.
 
-## 4. Why EulerSwap Would Perform Even Better
+## 4. Conclusion
 
-We believe the strategy would **outperform on EulerSwap** for the following reasons:
+We believe the **target strategy would outperform the proxy strategy** for the following reasons:
 
-### ✅ Better Auto-Hedging
+### ✅ Better delta neutralization
 
-- Because each LP defines their own liquidity curve, one can **intentionally favor delta-neutralizing trades** by tuning slippage asymmetry.
-- Unfavorable flow can be passively filtered via steep slippage.
+- Because each market maker defines their own liquidity curve, one can aggressively favor delta-neutralizing swaps by tuning slippage asymmetry **without being diluted by others**
+- EulerSwap's **continuous liquidity** allows finer control over concentration
 
-### ✅ Superior Capital Efficiency
+### ✅ Superior capital efficiency
 
-- No idle assets: funds are either earning interest (lent) or deployed (LP'd).
-- Native leverage is possible via Euler's lending market.
+- No idle assets: **all assets are earning interest** (lent)
+- Native **leverage** is possible via EulerSwap JIT liquidity engine
 
-### ✅ Continuous Liquidity
-
-- Unlike Uniswap v3, EulerSwap does not use discrete ticks.
-- This allows **finer control over concentration** and **more capital-efficient positioning**.
-
----
-
-We conclude that while the proxy strategy on Uniswap v3 offers robust empirical validation, its theoretical performance would be **even stronger when executed natively on EulerSwap**.
+We conclude that while the proxy strategy on Uniswap v3 offers robust empirical validation, **the target strategy on EulerSwap would perform even better**.

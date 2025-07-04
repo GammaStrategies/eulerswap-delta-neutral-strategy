@@ -53,7 +53,7 @@ Since Uniswap v3 is fundamentaly different than EulerSwap, the following **equiv
 | Liquidity form       | Curve       | Positions (plural because there is one for leftovers)   |
 | Add liquidity       | Install the curve | Mint positions    |
 | Remove liquidity       | Uninstall the curve | Burn positions     |
-| Maximum concentration / minimum slippage       | Concentration = 1   | Single-range position       |
+| Maximum concentration / minimum slippage       | Concentration = 1   | Single-range position   |
 | Minimum concentration / maximum slippage       | Concentration = 0     | Full-range position       |
 
 The **backtesting script** (backtest.py) uses a **tailored dataset** (swaps.csv) containing the historical swap data of a given pool, including the liquidity in the current range at each swap. These datasets are generated using proprietary data and script.
@@ -104,8 +104,8 @@ We believe the **target strategy would outperform the proxy strategy** for the f
 
 ### ✅ Better delta neutralization
 
-- Because each market maker defines their own liquidity curve, one can aggressively favor delta-neutralizing swaps by tuning slippage asymmetry **without being diluted by others**
-- EulerSwap's **continuous liquidity** allows finer control over concentration
+- Because each market maker defines their own liquidity curve, one can aggressively favor delta-neutralizing swaps by tuning slippages **without being diluted by others**
+- EulerSwap's liquidity curve is **continuous** thus allows for more extreme concentrations and slippages (not limited by tick or spacing)
 
 ### ✅ Superior capital efficiency
 

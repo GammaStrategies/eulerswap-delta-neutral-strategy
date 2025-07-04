@@ -1,4 +1,4 @@
-# Backtesting a delta-neutral market-making strategy
+# Backtesting a delta neutral market making strategy
 
 ## 1. Target strategy on EulerSwap
 

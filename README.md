@@ -53,8 +53,8 @@ Since Uniswap v3 is fundamentaly different than EulerSwap, the following **equiv
 | Liquidity form       | Curve       | Positions (plural because there is one for leftovers)   |
 | Add liquidity       | Install the curve | Mint positions    |
 | Remove liquidity       | Uninstall the curve | Burn positions     |
-| Maximum concentration / minimum slippage       | Concentration = 1   | Single-range position   |
-| Minimum concentration / maximum slippage       | Concentration = 0     | Full-range position       |
+| Maximum concentration / minimum slippage       | Concentration = 100%   | Single-range position   |
+| Minimum concentration / maximum slippage       | Concentration = 0%     | Full-range position       |
 
 The **backtesting script** (backtest.py) uses a **tailored dataset** (swaps.csv) containing the historical swap data of a given pool, including the liquidity in the current range at each swap. These datasets are generated using proprietary data and script.
 

@@ -22,16 +22,16 @@ As swaps are routed to the curve, the delta (normalized by liabilities) can get 
 - The current curve is **uninstalled**
 - A new curve is installed with:
   - Equilibrium price reset to current market price
-  - **Asymmetric extreme concentrations and fees**:
-    - One side with **high concentration** (flat, low slippage) and **low fee**
-    - One side with **low concentration** (steep, high slippage) and **high fee**
+  - **Asymmetric extreme concentrations**:
+    - One side with **high concentration** (flat, low slippage)
+    - One side with **low concentration** (steep, high slippage)
 - This acts as a **liquidity filter**: only swaps that neutralize the delta are routed through this curve
 
-When the normalized delta gets back within the threshold, the **cruise mode** is reactivated and the curve is reinstalled, with an equilibrium price reset to current market price, symmetric moderate concentrations and fees.
+When the normalized delta gets back within the threshold, the **cruise mode** is reactivated and the curve is reinstalled, with an equilibrium price reset to current market price and symmetric moderate concentrations.
 
 ### 📉 Price-driven rebalance
 
-When the price gets too far away from the equilibrium price, a rebalance is triggered and the curve is reinstalled, with an equilibrium price reset to current market price, and concentrations and fees based on the current mode (neutralization or cruise).
+When the price gets too far away from the equilibrium price, a rebalance is triggered and the curve is reinstalled, with an equilibrium price reset to current market price, and concentrations based on the current mode (neutralization or cruise).
 
 ## 2. Proxy strategy on Uniswap v3
 
@@ -55,7 +55,6 @@ Since Uniswap v3 is fundamentaly different than EulerSwap, the following **equiv
 | Remove liquidity       | Uninstall the curve | Burn positions     |
 | Maximum concentration / minimum slippage       | Concentration = 1   | Single-range position   |
 | Minimum concentration / maximum slippage       | Concentration = 0     | Full-range position       |
-| Fees      | Custom and assymetric     | Fixed and symmetric     |
 
 The **backtesting script** (backtest.py) uses a **tailored dataset** (swaps.csv) containing the historical swap data of a given pool, including the liquidity in the current range at each swap. These datasets are generated using proprietary data and script.
 
@@ -105,8 +104,7 @@ We believe the **target strategy would outperform the proxy strategy** for the f
 
 ### ✅ Better delta neutralization
 
-- EulerSwap's liquidity curve is **continuous** (not limited by tick or spacing) thus allows for more extreme concentrations and slippages, that better incentivize delta-neutralizing swaps 
-- EulerSwap allows for **custom and asymmetric fees**, which can further incentivize delta-neutralizing swaps
+- EulerSwap's liquidity curve is **continuous** (not limited by tick or spacing) thus allows for more extreme concentrations and slippages, that better incentivize delta-neutralizing swaps
 - Because each market maker defines their own liquidity curve, one can aggressively favor delta-neutralizing swaps **without being diluted by others**
 
 ### ✅ Superior capital efficiency

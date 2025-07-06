@@ -1,0 +1,10 @@
+[profile.default]
+src = "src"
+out = "out"
+libs = ["lib"]
+solc = "0.8.27"
+
+[rpc_endpoints]
+unichain = "https://0xrpc.io/uni"
+
+# See more config options https://book.getfoundry.sh/config/

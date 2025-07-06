@@ -96,6 +96,9 @@ contract DeltaNeutralVault is ERC4626, ReentrancyGuard, Ownable {
 
     /// @notice Deposit USDC and keep in vault (no auto-deployment)
     function _deposit(address caller, address receiver, uint256 assets, uint256 shares) internal override {
+        // Prevent deposits if user is on their last available nonce
+        require(userNonces[receiver] < 255, "Cannot deposit: user has reached sub-account limit");
+        
         super._deposit(caller, receiver, assets, shares);
         // Assets stay in vault until rebalance is called
     }
@@ -112,12 +115,18 @@ contract DeltaNeutralVault is ERC4626, ReentrancyGuard, Ownable {
         require(block.timestamp <= deadline, "Deadline exceeded");
         require(minOut.length == 3, "Invalid minOut array");
         
-        // Automatically create sub-account for user
-        userSubAccount = _computeSubAccountAddress(receiver, _getNextUserNonce(receiver));
+        uint256 currentNonce = userNonces[receiver];
         
-        // Store the nonce usage (inline nonce calculation)
-        userNonces[receiver] = _getNextUserNonce(receiver) + 1;
-
+        // If on last nonce (255), mandate full withdrawal to prevent fund lockup
+        if (currentNonce == 255) {
+            uint256 userBalance = balanceOf(owner);
+            require(assets == userBalance || assets >= userBalance, "Must withdraw all shares on final nonce");
+            assets = userBalance; // Force full withdrawal
+        }
+        
+        // Automatically create sub-account for user
+        userSubAccount = _computeSubAccountAddress(receiver, currentNonce);
+        
         // Uninstall current pool
         if (currentPool != address(0)) {
             factory.uninstallPool();
@@ -137,16 +146,17 @@ contract DeltaNeutralVault is ERC4626, ReentrancyGuard, Ownable {
         // Transfer proportional position to user's sub-account
         _transferPositionToSubAccount(userSubAccount, usdcAmount, wethAmount, wethDebt);
 
-        // Burn shares
+        // Burn shares and increment nonce
         shares = previewWithdraw(assets);
         _burn(owner, shares);
+        userNonces[receiver] = currentNonce + 1;
 
-        // Reinstall pool with same parameters (if users remain) - inline structs
+        // Reinstall pool if needed
         if (totalSupply() > 0 && lastParams.eulerAccount != address(0)) {
             _installPool(lastParams, lastInitialState, lastSalt);
         }
 
-        emit SubAccountCreated(receiver, userSubAccount, userNonces[receiver] - 1); // nonce that was used
+        emit SubAccountCreated(receiver, userSubAccount, currentNonce);
         emit WithdrawalExecuted(receiver, usdcAmount, wethAmount, wethDebt);
         emit Withdraw(msg.sender, receiver, owner, assets, shares);
 
@@ -161,69 +171,10 @@ contract DeltaNeutralVault is ERC4626, ReentrancyGuard, Ownable {
     }
 
     /// @notice Get user's current nonce usage for sub-accounts
-    /// @dev Returns used nonces and remaining capacity (256 max)
+    /// @dev Returns used nonces and remaining capacity (255 max usable, 256th is final)
     function getUserNonceInfo(address user) external view returns (uint256 used, uint256 remaining) {
         used = userNonces[user];
-        remaining = 256 - used;
-    }
-
-    /// @notice Legacy withdraw function - redirects to net settlement for safety
-    /// @dev This provides a safer fallback that avoids debt transfer complexity
-    function withdraw(
-        uint256 assets,
-        address receiver,
-        address owner,
-        uint256[] calldata minOut,
-        uint256 deadline
-    ) external nonReentrant returns (uint256 shares) {
-        require(block.timestamp <= deadline, "Deadline exceeded");
-        require(minOut.length == 3, "Invalid minOut array");
-
-        // Calculate and validate proportional amounts (inline userPercentage)
-        uint256 usdcAmount = (usdcVault.balanceOf(address(this)) * balanceOf(owner) * 1e18 / totalSupply()) / 1e18;
-        require(usdcAmount >= minOut[0], "Insufficient USDC");
-        
-        uint256 wethAmount = (weth.balanceOf(address(this)) * balanceOf(owner) * 1e18 / totalSupply()) / 1e18;
-        require(wethAmount >= minOut[1], "Insufficient WETH");
-        
-        uint256 wethDebt = (wethVault.debtOf(address(this)) * balanceOf(owner) * 1e18 / totalSupply()) / 1e18;
-        require(wethDebt <= minOut[2], "Debt too high");
-
-        // Uninstall pool
-        if (currentPool != address(0)) {
-            factory.uninstallPool();
-            currentPool = address(0);
-        }
-
-        // Transfer net assets to user
-        if (usdcAmount > 0) {
-            usdcVault.withdraw(usdcAmount, receiver, address(this));
-        }
-        // NET SETTLEMENT: Give WETH remainder after paying debt
-        if (wethAmount > wethDebt) {
-            weth.safeTransfer(receiver, wethAmount - wethDebt);
-        }
-        
-        // Repay what we can of the debt
-        if (wethAmount > 0 && wethDebt > 0) {
-            wethVault.repay(wethAmount < wethDebt ? wethAmount : wethDebt, address(this));
-        }
-
-        // Burn shares
-        shares = previewWithdraw(assets);
-        _burn(owner, shares);
-
-        // Reinstall pool if needed (inline structs)
-        if (totalSupply() > 0 && lastParams.eulerAccount != address(0)) {
-            _installPool(lastParams, lastInitialState, lastSalt);
-        }
-
-        emit WithdrawalExecuted(receiver, usdcAmount, 
-            wethAmount > wethDebt ? wethAmount - wethDebt : 0,
-            wethDebt > wethAmount ? wethDebt - wethAmount : 0);
-        emit Withdraw(msg.sender, receiver, owner, assets, shares);
-
-        return shares;
+        remaining = used < 255 ? 255 - used : 0; // 255 is the last usable nonce
     }
 
     // ============ Internal Sub-Account Functions ============

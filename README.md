@@ -2,7 +2,7 @@
 
 ## 1. Target strategy on EulerSwap
 
-This strategy is designed for **EulerSwap**, a novel AMM protocol that integrates lending and swapping into a unified architecture. The core goal is to remain **delta-neutral** while capturing fees from market-making activity, by dynamically adjusting the liquidity curve.
+This strategy is designed for **EulerSwap**, a novel AMM protocol that integrates lending and swapping into a unified architecture. The core goal is to remain **delta neutral** while capturing fees from market-making activity, by dynamically adjusting the liquidity curve.
 
 ### 🧩 Core mechanism
 

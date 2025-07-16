@@ -8,9 +8,9 @@ This strategy is designed for **EulerSwap**, a novel AMM protocol that integrate
 
 - The market-maker **wants exposure to token Y only** (typically a stablecoin like USDC, USDT, DAI, etc.)
 - They **lend token Y** on Euler (earning interest)
-- This loan is used as collateral to install a **liquidity curve** on EulerSwap with **token Y** and **token X** (a volatile asset like ETH, BTC, UNI, etc.)
+- This loan is used as collateral to install a **liquidity curve** on EulerSwap involving **token Y** and **token X** (a volatile asset like ETH, BTC, UNI, etc.)
 
-At initialization, the delta in token X is neutral because we are not exposed to it.
+At initialization, the delta in token X is neutral.
 
 ### 🛡️ Modes
 

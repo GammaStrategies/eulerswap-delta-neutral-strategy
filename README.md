@@ -14,7 +14,7 @@ At initialization, the delta is neutral as there is no exposure to token X.
 
 ### 🛡️ Modes
 
-As swaps are routed to the curve, the delta (normalized by liabilities) can get away from 0. When this distance exceeds a threshold, the **neutralization mode** is activated:
+As swaps are routed to the curve, the normalized delta can get away from 0. When this distance exceeds a threshold, the **neutralization mode** is activated:
 
 - The current curve is **uninstalled**
 - A new curve is installed with:

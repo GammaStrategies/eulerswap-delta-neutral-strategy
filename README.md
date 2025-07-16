@@ -10,7 +10,7 @@ This strategy is designed for **EulerSwap**, a novel AMM protocol that integrate
 - They **lend token Y** on Euler (earning interest)
 - This loan is used as collateral to install a **liquidity curve** on EulerSwap involving **token Y** and **token X** (a volatile asset like ETH, BTC, UNI, etc.)
 
-At initialization, the delta in token X is neutral.
+At initialization, the delta is neutral as there is no exposure to token X.
 
 ### 🛡️ Modes
 
